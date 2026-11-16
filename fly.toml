@@ -1,0 +1,40 @@
+# Fly.io deployment. Change `app` to a name you own, then: fly launch --copy-config --no-deploy && fly deploy
+app = "puff-royale"
+primary_region = "iad"
+
+[build]
+
+[env]
+  PORT = "8080"
+  TRUST_PROXY = "1"
+  LOG_DIR = "/data/logs"
+
+# Rooms live in memory in one process, so run exactly one machine (see README "Scaling").
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [http_service.concurrency]
+    type = "connections"
+    soft_limit = 4000
+    hard_limit = 5000
+
+  [[http_service.checks]]
+    method = "GET"
+    path = "/healthz"
+    interval = "15s"
+    timeout = "3s"
+    grace_period = "10s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
+
+# Optional: keep submission logs across deploys.
+#   fly volumes create puff_data --size 1
+# [mounts]
+#   source = "puff_data"
+#   destination = "/data"

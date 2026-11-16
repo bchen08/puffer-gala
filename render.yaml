@@ -1,0 +1,18 @@
+# Render Blueprint. In the Render dashboard: New > Blueprint, pick this repository.
+# Every push to the linked branch then rebuilds the Dockerfile and redeploys.
+# Rooms live in memory in one process, so keep this at one instance (see README "Scaling").
+services:
+  - type: web
+    name: puff-royale
+    runtime: docker
+    plan: free # sleeps after 15 idle minutes; change to "starter" for an always-on instance
+    region: virginia # cannot be changed after the service is created
+    numInstances: 1
+    healthCheckPath: /healthz
+    autoDeployTrigger: commit
+    envVars:
+      - key: PORT
+        value: "8080"
+      # Protects /api/stats. Render generates the value; read it in the service's Environment tab.
+      - key: STATS_KEY
+        generateValue: true
